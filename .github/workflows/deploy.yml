@@ -1,0 +1,30 @@
+# MeetDeck pushes the page + results.json to the gh-pages branch, then sends a "publish" repository_dispatch.
+# This deploys that branch to GitHub Pages (Actions deploys have no 10-builds-an-hour limit).
+name: Deploy results
+on:
+  repository_dispatch:
+    types: [publish]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
