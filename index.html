@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0b5cab">
+<title>Swim results</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#111827;--mute:#5b6472;--line:#e3e7ee;--acc:#0b5cab;--acc2:#e8f1fb;--ok:#0a7a3d;--bad:#b42318;--star:#c58a00}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1117;--card:#161b22;--ink:#e6edf3;--mute:#8b949e;--line:#2a313a;--acc:#58a6ff;--acc2:#132235;--ok:#3fb950;--bad:#f85149;--star:#e3b341}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+header{background:var(--acc);color:#fff;padding:14px 16px 12px;position:sticky;top:0;z-index:5}
+@media (prefers-color-scheme:dark){header{background:#0b3a6e}}
+header h1{margin:0;font-size:19px;line-height:1.2;padding-right:92px}
+.share{position:absolute;top:12px;right:12px;border:0;border-radius:10px;padding:7px 12px;font-size:14px;font-weight:600;
+  background:rgba(255,255,255,.18);color:#fff;display:flex;align-items:center;gap:6px;cursor:pointer}
+.share svg{width:17px;height:17px}
+.sheet{position:fixed;inset:auto 0 0 0;z-index:20;background:var(--card);color:var(--ink);border-top:1px solid var(--line);
+  border-radius:16px 16px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+.sheet a,.sheet button{display:block;width:100%;text-align:left;padding:13px 4px;font-size:16px;color:var(--ink);background:none;border:0;
+  border-bottom:1px solid var(--line);text-decoration:none;cursor:pointer}
+.sheet .x{color:var(--mute);text-align:center;border:0}
+.sheet h3{margin:2px 4px 4px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+.live{display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:#e5252a;color:#fff;border-radius:99px;padding:3px 11px;font-size:13px;font-weight:700;text-decoration:none}
+.live::before{content:"";width:8px;height:8px;border-radius:50%;background:#fff;animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.3}}
+header .sub{font-size:13px;opacity:.85;margin-top:2px}
+.bar{display:flex;gap:8px;margin-top:10px}
+.bar input{flex:1;min-width:0;border:0;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;color:#111}
+.bar button{border:0;border-radius:10px;padding:0 12px;font-size:14px;background:rgba(255,255,255,.18);color:#fff}
+.bar button.on{background:#fff;color:var(--acc)}
+main{padding:12px;max-width:720px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.card h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);margin:0;padding:10px 14px 4px}
+.scores{display:grid;grid-template-columns:1fr auto auto auto;gap:2px 14px;padding:4px 14px 12px;font-variant-numeric:tabular-nums}
+.scores .h{font-size:12px;color:var(--mute)}
+.scores .n{text-align:right}
+.scores b{font-size:17px}
+.ev{display:flex;align-items:center;gap:10px;padding:12px 14px;width:100%;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.ev .no{flex:0 0 34px;height:34px;border-radius:9px;background:var(--acc2);color:var(--acc);font-weight:700;display:grid;place-items:center;font-size:15px}
+.ev .t{flex:1;min-width:0}
+.ev .t div:first-child{font-weight:600}
+.ev .meta{font-size:13px;color:var(--mute)}
+.ev .chev{color:var(--mute);transition:transform .15s}
+.open .ev .chev{transform:rotate(90deg)}
+.pill{display:inline-block;font-size:11px;font-weight:600;border-radius:99px;padding:1px 8px;margin-left:6px;vertical-align:1px}
+.pill.new{background:var(--ok);color:#fff}
+.pill.wait{background:var(--line);color:var(--mute)}
+.rows{display:none;border-top:1px solid var(--line)}
+.open .rows{display:block}
+.r{display:grid;grid-template-columns:30px 1fr auto;gap:2px 10px;padding:9px 14px;border-bottom:1px solid var(--line);align-items:start}
+.r:last-child{border-bottom:0}
+.r .pl{font-weight:700;font-size:17px;color:var(--acc);text-align:center}
+.r .ln{font-size:16px;line-height:1.05}.r .ln small{display:block;font-size:9.5px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:.04em}
+.card.hasme{border-color:color-mix(in srgb,var(--star) 60%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--star) 45%,transparent)}
+.card.hasme .ev{background:color-mix(in srgb,var(--star) 16%,transparent)}
+.card.hasme .ev .no{background:var(--star);color:#1c1500}
+.ev .mine{font-size:13px;font-weight:700;color:color-mix(in srgb,var(--star) 75%,var(--ink));margin-top:1px}
+.hh{padding:6px 14px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);background:var(--acc2);border-bottom:1px solid var(--line)}
+.r .nm{font-weight:600}
+.r .nm small{font-weight:400;color:var(--mute)}
+.r .tm{font-size:13px;color:var(--mute)}
+.r .legs{font-size:13px;color:var(--mute)}
+.r .res{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;font-size:17px}
+.r .pts{text-align:right;font-size:12px;color:var(--mute)}
+.r .sd{text-align:right;font-size:12px;color:var(--mute);white-space:nowrap;font-variant-numeric:tabular-nums}
+.r .dn{color:var(--ok);font-weight:700}
+.r .up{color:var(--mute)}
+.r .dq{color:var(--bad)}
+.r.me{background:color-mix(in srgb,var(--star) 14%,transparent)}
+.star{background:none;border:0;padding:2px 4px 2px 8px;font-size:22px;line-height:1;color:var(--star);opacity:.55;cursor:pointer;vertical-align:-3px}
+.star.on{opacity:1}
+.hint{display:flex;gap:10px;align-items:center;max-width:720px;margin:10px auto 0;width:calc(100% - 24px);padding:12px 14px;border-radius:12px;
+  background:color-mix(in srgb,var(--star) 18%,var(--card));border:1px solid color-mix(in srgb,var(--star) 45%,transparent);font-size:14.5px}
+.hint .big{font-size:30px;color:var(--star);line-height:1}
+.hint b{display:block;font-size:15.5px}
+.hint button{margin-left:auto;background:none;border:0;font-size:20px;color:var(--mute);cursor:pointer;padding:4px 6px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:30;background:#14232a;color:#fff;padding:11px 16px;border-radius:12px;
+  font-size:14.5px;box-shadow:0 6px 24px rgba(0,0,0,.25);max-width:calc(100% - 32px);text-align:center}
+.toast b{color:#ffd23f}
+.legs .on{color:var(--ink);font-weight:700}
+.star.on{color:var(--star)}
+.r .st{font-size:12px;color:var(--mute);margin-top:2px;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.chip{display:inline-block;border-radius:6px;padding:0 6px;font-size:11.5px;font-weight:700;line-height:18px;background:var(--acc2);color:var(--acc)}
+.chip.pb{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.chip.state{background:color-mix(in srgb,var(--star) 22%,transparent);color:var(--star)}
+.sl{padding:8px 14px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--mute);background:color-mix(in srgb,var(--acc2) 45%,transparent)}
+.sl b{color:var(--ink);font-variant-numeric:tabular-nums}
+.sl div+div{margin-top:3px}
+.empty{padding:28px 16px;text-align:center;color:var(--mute)}
+.ytl a{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line);color:var(--ink);text-decoration:none}
+.ytl .dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto}
+.ytl .nm{flex:1;font-weight:600}.ytl .nm small{display:block;font-weight:400;color:var(--mute)}
+.ytl .sub{background:#e5252a;color:#fff;border-radius:99px;padding:4px 12px;font-size:13px;font-weight:700}
+footer{text-align:center;color:var(--mute);font-size:12px;padding:6px 16px 22px}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <button class="share" id="share" aria-label="Send this page to someone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13"/><path d="m7 8 5-5 5 5"/></svg>Share</button>
+  <h1 id="mname">Swim results</h1>
+  <div class="sub" id="msub">Loading…</div>
+  <a class="live hide" id="liveBtn" target="_blank" rel="noopener">LIVE &middot; Watch the stream</a>
+  <div class="bar"><input id="q" type="search" placeholder="Find a swimmer or team" autocomplete="off" enterkeyhint="search"><button id="mine" title="Show only swimmers you starred">★ Mine</button></div>
+</header>
+<div class="hint" id="hint" hidden><span class="big">☆</span><span><b>Follow your swimmer</b>Tap the ☆ next to their name. Then ★ Mine shows just their events, relays included.</span><button id="hintX" aria-label="close">✕</button></div>
+<main id="main"><div class="empty">Loading results…</div></main>
+<section class="card" id="yt" style="max-width:720px;margin:0 auto 10px;width:calc(100% - 24px)"><h2>Watch &amp; follow on YouTube</h2>
+  <div style="padding:2px 14px 12px;font-size:14px;color:var(--mute)">Every meet streams on the pool's channel. Each school has a playlist of its meets there.</div>
+  <div class="ytl"></div></section>
+<footer id="foot">Updates on its own every 30 seconds. ▼ = time dropped from the seed time, ▲ = added.</footer>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } },
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+let PREV = null, FRESH = new Set(), D = null, OPEN = new Set(store.get("open", [])), STARS = new Set(store.get("stars", [])), MINE = false;
+
+function ago(iso) {
+  const s = (Date.now() - Date.parse(iso)) / 1000;
+  if (!isFinite(s)) return "";
+  if (s < 90) return "just now";
+  if (s < 3600) return Math.round(s / 60) + " min ago";
+  return new Date(iso).toLocaleTimeString([], {hour: "numeric", minute: "2-digit"});
+}
+
+async function load() {
+  try {
+    const r = await fetch("results.json?t=" + Date.now(), {cache: "no-store"});
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    if (!D || d.updated !== D.updated) {
+      if (D) { const old = Object.fromEntries((D.events || []).map(v => [v.no, v.sig])); for (const v of d.events || []) if (v.sig && old[v.no] !== v.sig) FRESH.add(String(v.no)); }
+      // a new meet on the page: forget which events were opened for the last one (stars stay - same swimmers)
+      const mid = (d.meet && (d.meet.id || d.meet.name + d.meet.date)) || "";
+      if (mid && store.get("meet", "") !== mid) { store.set("meet", mid); OPEN = new Set(); store.set("open", []); FRESH = new Set(); }
+      D = d; render();
+    }
+    else $("#msub").textContent = sub();
+  } catch (e) {
+    if (!D) $("#main").innerHTML = `<div class="empty">No results posted yet. This page fills in once the meet starts.</div>`;
+  }
+}
+
+function sub() {
+  const m = D.meet || {};
+  return [m.location, m.date, D.updated ? "updated " + ago(D.updated) : ""].filter(Boolean).join(" · ");
+}
+
+function match(row, q) {
+  if (!q) return true;
+  return (row.name + " " + row.team + " " + (row.legs || "") + " " + (row.team_name || "")).toLowerCase().includes(q);
+}
+const starKey = r => r.name + "|" + r.team;
+// a starred swimmer ("Last, First|TEAM") also shows on their team's relays, whose legs read "First Last, First Last"
+function legName(k) { const [nm, team] = k.split("|"), p = nm.split(", "); return p.length > 1 ? {name: (p[1] + " " + p[0]).toLowerCase(), team} : null; }
+function starredLegs(r) {
+  if (!r.legs) return [];
+  const legs = r.legs.split(", ").map(x => x.trim().toLowerCase());
+  return [...STARS].map(legName).filter(x => x && x.team === r.team && legs.includes(x.name)).map(x => x.name);
+}
+const starredIn = r => STARS.has(starKey(r)) || starredLegs(r).length > 0;
+function legsHtml(r) {
+  const on = new Set(starredLegs(r));
+  return r.legs.split(", ").map(x => on.has(x.trim().toLowerCase()) ? `<span class="on">★ ${esc(x)}</span>` : esc(x)).join(", ");
+}
+
+function render() {
+  const m = D.meet || {};
+  document.title = (m.name || "Swim") + " – results";
+  $("#mname").textContent = m.name || "Swim results";
+  $("#msub").textContent = sub();
+  const lb = $("#liveBtn"), st = D.stream;
+  lb.classList.toggle("hide", !(st && st.url && st.live));
+  if (st && st.url) lb.href = st.url;
+  const q = $("#q").value.trim().toLowerCase();
+  const out = [];
+  // meet order: event 1, 2, 3 ... (the latest one is marked LATEST and opened)
+  const evs = D.events || [];
+  let shown = 0;
+  for (const v of evs) {
+    const done = v.rows && v.rows.length;
+    // not swum yet: the start list (heat, lane, seed) in place of results
+    const lanes = done ? [] : (v.heats || []).flatMap(h => h.lanes.map(l => Object.assign({heat: h.heat, heats: v.heats.length}, l)));
+    const rows = (done ? v.rows : lanes).filter(r => match(r, q) && (!MINE || starredIn(r)));
+    if ((q || MINE) && !rows.length) continue;
+    shown++;
+    const isNew = done && (FRESH.has(String(v.no)) || D.latest == v.no);
+    const open = OPEN.has(String(v.no)) || (!OPEN.size && D.latest == v.no) || !!q || MINE;
+    const winner = done ? v.rows.find(r => r.place == 1) : null;
+    const nh = (v.heats || []).length;
+    const meta = done ? (winner ? `1st ${esc(winner.name)} ${esc(winner.result)}` : `${v.rows.length} results`)
+      : nh ? `Not swum yet &middot; ${nh} heat${nh == 1 ? "" : "s"}, ${lanes.length} ${lanes.length == 1 ? "entry" : "entries"}` : "Not swum yet";
+    // starred swimmers in this event (themselves or on a relay): the whole listing turns star-colored
+    const mine = (done ? v.rows : lanes).filter(starredIn);
+    const mineTxt = mine.map(r => {
+      const who = STARS.has(starKey(r)) ? r.name.split(", ")[0] : starredLegs(r).map(n => n.split(" ").slice(-1)[0].replace(/^./, c => c.toUpperCase())).join(", ");
+      return `★ ${esc(who)} ` + (done ? esc(r.place ? ordinal(r.place) + " " + (r.result || "") : r.result || "") : `heat ${esc(r.heat)} lane ${esc(r.lane)}`);
+    }).join(" &middot; ");
+    out.push(`<div class="card ${open ? "open" : ""} ${mine.length ? "hasme" : ""}" data-ev="${esc(v.no)}">
+      <button class="ev" data-tog="${esc(v.no)}"><span class="no">${esc(v.no)}</span>
+        <span class="t"><div>${esc(v.label)}${isNew ? `<span class="pill new">${D.latest == v.no ? "LATEST" : "NEW"}</span>` : done ? "" : `<span class="pill wait">upcoming</span>`}</div><div class="meta">${meta}</div>${mineTxt ? `<div class="mine">${mineTxt}</div>` : ""}</span>
+        <span class="chev">›</span></button>
+      <div class="rows">${done ? stateLines(v) + rows.map(r => rowHtml(r)).join("")
+        : rows.length ? heatsHtml(rows) : `<div class="empty" style="padding:14px">No results yet.</div>`}</div></div>`);
+  }
+  // team scores at the bottom
+  if (D.scores && D.scores.length && !q && !MINE) {
+    out.push(`<div class="card"><h2>Team scores${D.scored ? ` · after ${D.scored} event${D.scored == 1 ? "" : "s"}` : ""}</h2><div class="scores">
+      <span class="h">Team</span><span class="h n">Women</span><span class="h n">Men</span><span class="h n">Total</span>
+      ${D.scores.map(s => `<span>${esc(s.name)}</span><span class="n">${s.F}</span><span class="n">${s.M}</span><span class="n"><b>${s.total}</b></span>`).join("")}</div></div>`);
+  }
+  if (!shown) out.push(`<div class="empty">${MINE ? "Tap ☆ next to a swimmer to follow them here." : q ? "No one matches that." : "No events yet."}</div>`);
+  $("#main").innerHTML = out.join("");
+  const src = D.state_src;
+  $("#foot").innerHTML = "Updates on its own every 30 seconds. ▼ = time dropped from the seed time, ▲ = added." +
+    (src ? `<br>State standings (rank in class, season best and when it was swum) from <a href="${esc(src.url)}" target="_blank" rel="noopener">${esc(src.name)}</a>${src.as_of ? ", checked " + esc(src.as_of.replace("T", " ")) : ""}. Top 32 per event (20 relays) go to state.` : "");
+}
+
+// seed time, and how much faster (dropped) or slower (added) the swim was
+function seedLine(r) {
+  if (!r.seed) return r.result && !/^(DQ|NS)/.test(r.result) ? `<div class="sd">Seed NT</div>` : "";
+  const d = r.drop;
+  const ch = d == null ? "" : d > 0 ? ` <span class="dn">▼ ${d.toFixed(2)}</span>` : d < 0 ? ` <span class="up">▲ ${(-d).toFixed(2)}</span>` : ` <span class="up">±0.00</span>`;
+  return `<div class="sd">Seed ${esc(r.seed)}${ch}</div>`;
+}
+// this season's Utah HS standings (utahswimcoach.com): times in seconds
+function ft(v) { if (!v) return ""; const m = Math.floor(v / 60), x = v - m * 60; return m ? `${m}:${x.toFixed(2).padStart(5, "0")}` : x.toFixed(2); }
+function stateLines(v) {
+  if (!v.state || !v.state.length) return "";
+  return `<div class="sl">${v.state.map(x => `<div><b>${esc(x.cls)}</b> this season: #1 <b>${ft(x.top)}</b>${x.top_by ? ` ${esc(x.top_by)}` : ""}${x.line ? ` &middot; <span title="Estimated time needed to qualify for state: the #${x.spots} fastest time in ${esc(x.cls)} this season">est. state qualifying time <b>${ft(x.line)}</b></span>` : ""}${x.record ? ` &middot; record <b>${ft(x.record)}</b> ${esc(x.record_by.split(",").length > 1 ? x.record_school : x.record_by)} ${esc(x.record_year || "")}` : ""}</div>`).join("")}</div>`;
+}
+// '2026-11-03' -> 'Nov 3'
+function sbDate(d) { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || ""); return m ? ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m[2] - 1] + " " + (+m[3]) : d; }
+function stateRow(r) {
+  const s = r.st; if (!s || !s.cls) return "";
+  const out = [];
+  if (s.rank) out.push(`<span>${esc(s.cls)} #${s.rank} &middot; season best ${ft(s.sb)}${s.sb_date ? ` <span title="${esc(s.sb_meet || "")}">(${esc(sbDate(s.sb_date))})</span>` : ""}</span>`);
+  if (s.best) out.push(`<span class="chip pb">New season best</span>`);
+  if (s.now && (!s.rank || s.now < s.rank)) out.push(`<span class="chip ${s.now <= (s.spots || 32) ? "state" : ""}">Now #${s.now} in ${esc(s.cls)}</span>`);
+  return out.length ? `<div class="st">${out.join("")}</div>` : "";
+}
+// start list of an event that hasn't swum: grouped by heat, lane in the left column, seed on the right
+function heatsHtml(lanes) {
+  let out = "", h = null;
+  for (const r of lanes) {
+    if (r.heat !== h) { h = r.heat; out += `<div class="hh">Heat ${esc(h)}${r.heats > 1 ? ` of ${r.heats}` : ""}</div>`; }
+    const k = starKey(r), on = STARS.has(k);
+    out += `<div class="r ${starredIn(r) ? "me" : ""}"><div class="pl ln"><small>Lane</small>${esc(r.lane)}</div>
+      <div><div class="nm">${esc(r.name)}${r.yr ? ` <small>${esc(r.yr)}</small>` : ""}${r.exh ? ` <small>(exh)</small>` : ""}${r.legs ? "" : `<button class="star ${on ? "on" : ""}" data-star="${esc(k)}" aria-label="follow">${on ? "★" : "☆"}</button>`}</div>
+        <div class="tm">${esc(r.team_name || r.team)}</div>${r.legs ? `<div class="legs">${legsHtml(r)}</div>` : ""}${stateRow(r)}</div>
+      <div><div class="sd">${r.seed ? "Seed " + esc(r.seed) : "Seed NT"}</div></div></div>`;
+  }
+  return out;
+}
+function ordinal(n) { n = +n; const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+function rowHtml(r) {
+  const k = starKey(r), on = STARS.has(k), dq = /^(DQ|NS)/.test(r.result || "");
+  return `<div class="r ${starredIn(r) ? "me" : ""}"><div class="pl">${esc(r.place || "–")}</div>
+    <div><div class="nm">${esc(r.name)}${r.yr ? ` <small>${esc(r.yr)}</small>` : ""}${r.exh ? ` <small>(exh)</small>` : ""}${r.legs ? "" : `<button class="star ${on ? "on" : ""}" data-star="${esc(k)}" aria-label="follow">${on ? "★" : "☆"}</button>`}</div>
+      <div class="tm">${esc(r.team_name || r.team)}</div>${r.legs ? `<div class="legs">${legsHtml(r)}</div>` : ""}${r.dqtxt ? `<div class="legs dq">${esc(r.dqtxt)}</div>` : ""}${stateRow(r)}</div>
+    <div><div class="res ${dq ? "dq" : ""}">${esc(r.result || "")}</div>${seedLine(r)}${r.points ? `<div class="pts">${esc(r.points)} pts</div>` : ""}</div></div>`;
+}
+
+document.addEventListener("click", e => {
+  const s = e.target.closest("[data-star]");
+  if (s) {
+    const k = s.dataset.star, adding = !STARS.has(k);
+    adding ? STARS.add(k) : STARS.delete(k); store.set("stars", [...STARS]); render();
+    const nm = k.split("|")[0].split(", ").reverse().join(" ");
+    toast(adding ? `<b>★</b> Following ${esc(nm)}. Tap <b>★ Mine</b> to see only your swimmers, relays included.` : `Stopped following ${esc(nm)}.`);
+    hint(); return;
+  }
+  if (e.target.id === "hintX") { store.set("hint_done", true); hint(); return; }
+  const t = e.target.closest("[data-tog]");
+  if (t) {
+    const no = t.dataset.tog, v = (D.events || []).find(x => String(x.no) === no);
+    OPEN.has(no) ? OPEN.delete(no) : OPEN.add(no);
+    FRESH.delete(no);
+    store.set("open", [...OPEN]); render();
+  }
+});
+$("#q").addEventListener("input", () => D && render());
+let toastT = null;
+function toast(html) {
+  let t = document.getElementById("toast");
+  if (!t) { t = document.createElement("div"); t.id = "toast"; t.className = "toast"; document.body.appendChild(t); }
+  t.innerHTML = html; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 4000);
+}
+// the follow hint stays until someone stars a swimmer or closes it
+function hint() { $("#hint").hidden = STARS.size > 0 || store.get("hint_done", false); }
+hint();
+$("#mine").addEventListener("click", () => { MINE = !MINE; $("#mine").classList.toggle("on", MINE); D && render(); });
+// Share: the phone's own share sheet (Messages, email, ...) when it has one; otherwise text / copy
+$("#share").addEventListener("click", () => {
+  const url = location.href.split("#")[0].split("?")[0], st = D && D.stream && D.stream.url ? D.stream : null;
+  const old = document.getElementById("sheet"); if (old) old.remove();
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent), sms = t => `sms:${ios ? "&" : "?"}body=${encodeURIComponent(t)}`;
+  const name = D && D.meet && D.meet.name ? D.meet.name : "";
+  const resText = "Live results" + (name ? " for " + name : "") + ": " + url;
+  const strText = "Watch " + (name || "the meet") + " live: " + (st ? st.url : "");
+  const el = document.createElement("div");
+  el.className = "sheet"; el.id = "sheet";
+  el.innerHTML = `<h3>Results</h3>
+    <a href="${sms(resText)}">💬 Text the results link</a>
+    ${navigator.share ? `<button data-native="res">📤 More ways to send it…</button>` : `<a href="mailto:?subject=${encodeURIComponent(document.title)}&body=${encodeURIComponent(resText)}">✉️ Email it</a>`}
+    <button data-copy="${esc(url)}">🔗 Copy the results link</button>
+    ${st ? `<h3 style="margin-top:12px">Live stream${st.live ? " &middot; on now" : ""}</h3>
+    <a href="${esc(st.url)}" target="_blank" rel="noopener">▶️ Watch the stream</a>
+    <a href="${sms(strText)}">💬 Text the stream link</a>
+    ${navigator.share ? `<button data-native="str">📤 More ways to send it…</button>` : ""}
+    <button data-copy="${esc(st.url)}">🔗 Copy the stream link</button>` : ""}
+    <button class="x" id="closeSheet">Close</button>`;
+  document.body.appendChild(el);
+  el.addEventListener("click", async ev => {
+    const t = ev.target.closest("button"); if (!t) return;
+    if (t.id === "closeSheet") return el.remove();
+    if (t.dataset.native) {
+      const isStr = t.dataset.native === "str";
+      try { await navigator.share({title: isStr ? "Live stream" + (name ? ": " + name : "") : document.title, url: isStr ? st.url : url}); el.remove(); } catch (e) {}
+      return;
+    }
+    if (t.dataset.copy) {
+      try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = "✓ Copied"; }
+      catch (e) { prompt("Copy this link:", t.dataset.copy); }
+      setTimeout(() => el.remove(), 900);
+    }
+  });
+});
+// one channel for every meet, plus a playlist per school on it
+const CHANNELS = [["https://www.youtube.com/@PrattAquaticCenter?sub_confirmation=1", "Tooele County Pratt Aquatic Center", "Every meet at the pool \u00b7 @PrattAquaticCenter", "#0b5cab", "Subscribe"],
+  ["https://www.youtube.com/playlist?list=PLPJ9Iplo8Mks", "Tooele High Swimming", "Buffaloes \u00b7 this season's meets", "#9B5DE5", "Playlist"],
+  ["https://www.youtube.com/playlist?list=PLbamkCWBGuA8", "Stansbury High Swimming", "Stallions \u00b7 this season's meets", "#3D7FF0", "Playlist"],
+  ["https://www.youtube.com/playlist?list=PLV1401o6lJEg", "Grantsville High Swimming", "Cowboys \u00b7 this season's meets", "#E5383B", "Playlist"],
+  ["https://www.youtube.com/playlist?list=PLUt1eDeuyxoc", "Deseret Peak Swimming", "Golden Eagles \u00b7 this season's meets", "#C9B45C", "Playlist"]];
+document.querySelector(".ytl").innerHTML = CHANNELS.map(([u, n, s, c, b]) => `<a href="${u}" target="_blank" rel="noopener">
+  <span class="dot" style="background:${c}"></span><span class="nm">${esc(n)}<small>${esc(s)}</small></span><span class="sub">${b}</span></a>`).join("");
+load();
+setInterval(load, 30000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+</script>
+</body>
+</html>
